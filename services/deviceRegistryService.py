@@ -39,5 +39,22 @@ class DeviceRegistryService(object):
         return sorted(devices, key=lambda entity: entity.get("index", sys.maxsize))
 
     def update_device(self, device):
-        with open(os.path.join(self._dev_dir, device.get("name") + ".json"), "w") as f:
-            return f.write(json.dumps(device, indent=4))
+        path = os.path.join(self._dev_dir, device.get("name") + ".json")
+        if os.path.exists(path):
+            with open(path, "w") as f:
+                return f.write(json.dumps(device, indent=4))
+
+    def add_device(self, device) -> bool:
+        path = os.path.join(self._dev_dir, device.get('name') + '.json')
+        try:
+            if not os.path.exists(path):
+                with open(path, 'w') as f:
+                    f.write(json.dumps(device, indent=4))
+                return True
+        except Exception as e:
+            return False
+
+    def del_device(self, device):
+        path = os.path.join(self._dev_dir, device.get('name') + '.json')
+        if os.path.exists(path):
+            os.remove(path)

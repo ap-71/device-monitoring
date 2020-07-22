@@ -1,0 +1,25 @@
+{% extends 'base-table.html' %}
+{% block content %}
+<div class="container" style="background: rgb(222,222,222); padding-top: 20px;">
+	<h2>Удаление устройств</h2>
+	<form method="POST"  action="/action_{{ url_action }}_{{ url_type }}">
+		<br>
+		<label>Устройства</label>
+		<div style="overflow-y: scroll; max-height: 200px; padding-left: 20px; border-radius: 5px; background: white;">
+			<div data-spy="scroll" data-target="#navbar-example2"  data-offset="0">
+				{% for dev in devices %}
+					<div class="form-check">
+					  <input class="form-check-input" name="del_dev_names" type="checkbox" value="{{dev.name}}" id="id_{{dev.name}}">
+					  <label class="form-check-label" for="id_{{dev.name}}">
+						{{dev.name}}: ip-адрес={{dev.ip}}, group={{dev.group}}
+					  </label>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+		<div class="col" style="padding: 10px 0 20px 0;">
+			<button type="submit" name="del_device_submit" value="True" class="btn btn-primary">Удалить</button>
+		</div>
+	</form>
+</div>
+{% endblock %}

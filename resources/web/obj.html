@@ -19,14 +19,14 @@
 			{% for dev in devices %}
 				<tr>
 					
-					{% if dev.monitoring == 'disable'%}
+					{% if dev.monitoring == 'disable' and dev.group == page %}
 						<td style="color:#cccccc," >{{ dev.name }}</td>
 						<td style="color:#cccccc" >{{ dev.ip }}</td>
 						<td ><span class="gray-dot"></span></td>
 						<td style="color:#cccccc" >{{ dev.snmp_name }}</td>
 						<td style="color:#cccccc" >{{ dev.last_discovery }}</td>
 						<td style="color:#cccccc" >{{ dev.last_online }}</td>
-					{% else %}
+					{% elif dev.group == page %}
 						<td>{{ dev.name }}</td>
 						<td>{{ dev.ip }}</td>
 						{% if dev.status == 'online' %}
