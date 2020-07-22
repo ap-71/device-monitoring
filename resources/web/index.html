@@ -1,67 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<title>Device Monitoring</title>
-	<meta http-equiv="refresh" content="60">
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-<!--===============================================================================================-->
-	<link rel="icon" type="image/png" href="/static/icons/favicon.ico"/>
-<!--===============================================================================================-->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="static/css/main.css">
-<!--===============================================================================================-->
-</head>
-	<body>
-		<div class="limiter">
-			<div class="container-table100">
-				<div class="wrap-table100">
-					<div class="table100 ver4 m-b-110">
-						<div class="table100-head">
-							<table>
-								<thead>
-									<tr class="row100 head">
-										<th class="cell100 column1">Device name</th>
-										<th class="cell100 column2">IP</th>
-										<th class="cell100 column3">Status</th>
-										<th class="cell100 column4">Last Discovery</th>
-										<th class="cell100 column5">Last Online</th>
-									</tr>
-								</thead>
-							</table>
-						</div>
-						<div class="table100-body js-pscroll">
-							<table>
-								<tbody>
-									{% for dev in devices %}
-										<tr class="row100 body">
-											{% if dev.monitoring == 'disable' %}
-                                                <td style="color:#cccccc" class="cell100 column1">{{ dev.name }}</td>
-                                                <td style="color:#cccccc" class="cell100 column2">{{ dev.ip }}</td>
-                                                <td class="cell100 column3"><span class="gray-dot"></span></td>
-                                                <td style="color:#cccccc" class="cell100 column4">{{ dev.last_discovery }}</td>
-                                                <td style="color:#cccccc" class="cell100 column5">{{ dev.last_online }}</td>
-											{% else %}
-                                                <td class="cell100 column1">{{ dev.name }}</td>
-                                                <td class="cell100 column2">{{ dev.ip }}</td>
-                                                {% if dev.status == 'online' %}
-                                                    <td class="cell100 column3"><span class="green-dot"></span></td>
-                                                {% else %}
-                                                    <td class="cell100 column3"><span class="red-dot"></span></td>
-                                                {% endif %}
-                                                <td class="cell100 column4">{{ dev.last_discovery }}</td>
-                                                <td class="cell100 column5">{{ dev.last_online }}</td>
-											{% endif %}
-										</tr>
-          							{% endfor %}
-								</tbody>
-							</table>
-						</div>
-					</div>
-
-				</div>
-			</div>
-		</div>
-	</body>
-</html>
+{% extends 'base-table.html' %}
+{% block refresh %}
+<meta http-equiv="refresh" content="60">
+{% endblock %}
+{% block content %}
+<div class="table-responsive">
+	<table class="table">
+		<thead>
+			<tr>
+				<th scope="col">Device name</th>
+				<th scope="col">IP</th>
+				<th scope="col">Status</th>
+				<th scope="col">SNMP Name</th>
+				<th scope="col">Last Discovery</th>
+				<th scope="col">Last Online</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for dev in devices %}
+				<tr>
+					
+					{% if dev.monitoring == 'disable'%}
+						<td style="color:#cccccc," >{{ dev.name }}</td>
+						<td style="color:#cccccc" >{{ dev.ip }}</td>
+						<td ><span class="gray-dot"></span></td>
+						<td style="color:#cccccc" >{{ dev.snmp_name }}</td>
+						<td style="color:#cccccc" >{{ dev.last_discovery }}</td>
+						<td style="color:#cccccc" >{{ dev.last_online }}</td>
+					{% else %}
+						<td>{{ dev.name }}</td>
+						<td>{{ dev.ip }}</td>
+						{% if dev.status == 'online' %}
+							<td><span class="green-dot"></span></td>
+						{% else %}
+							<td><span class="red-dot"></span></td>
+						{% endif %}
+						{% if dev.monitoring_snmp == 'enable' %}
+							<td>{{ dev.snmp_name }}</td>
+						{% else %}
+							<td style="color:#cccccc">{{ dev.snmp_name }}</td>
+						{% endif %}
+						<td>{{ dev.last_discovery }}</td>
+						<td>{{ dev.last_online }}</td>
+					{% endif %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}

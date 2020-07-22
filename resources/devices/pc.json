@@ -1,0 +1,13 @@
+{
+    "name": "PC",
+    "ip": "192.168.222.5",
+    "notification": "disable",
+    "group": "work",
+    "monitoring": "enable",
+    "monitoring_snmp": "disable",
+    "index": 2,
+    "last_discovery": 1595188019,
+    "last_online": 1595188019,
+    "status": "online",
+    "snmp_name": "None"
+}

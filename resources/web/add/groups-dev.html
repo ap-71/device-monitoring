@@ -1,0 +1,36 @@
+{% extends 'base-table.html' %}
+{% block content %}
+<div class="container" style="background: rgb(222,222,222); padding-top: 20px;">
+	<form method="POST"  action="/action_{{ url_action }}_{{ url_type }}">
+		<div >
+			<div class="row" >
+				<div class="col-3">
+					<label for="inlineFormInputName">Имя группы</label>
+					<input type="text" name="add_group_name" class="form-control" id="inlineFormInputName">
+				</div>
+				<div class="col-6">
+					<label for="inlineFormInputName">Описание</label>
+					<input type="text" name="add_group_description" class="form-control" id="inlineFormInputName">
+				</div>
+			</div>
+			<br>
+			<label>Устройства</label>
+			<div style="overflow-y: scroll; max-height: 200px; padding-left: 20px; background: white; border-radius: 5px;">
+				<div data-spy="scroll" data-target="#navbar-example2"  data-offset="0">
+					{% for dev in devices %}
+						<div class="form-check">
+						  <input class="form-check-input" name="add_group_devices" type="checkbox" value="{{dev.name}}" id="id_{{dev.name}}">
+						  <label class="form-check-label" for="id_{{dev.name}}">
+							{{dev.name}}: ip-адрес={{dev.ip}}, group={{dev.group}}
+						  </label>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+			<div class="col col-sm col-md col-lg-6 col-xl-4" style="padding: 10px 0 20px 0;">
+				<button type="submit" name="add_group_submit" value="True" class="btn btn-primary">Добавить</button>
+			</div>
+		</div>
+	</form>
+</div>
+{% endblock %}
