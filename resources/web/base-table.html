@@ -17,24 +17,55 @@
 </head>
 	<body>
     <nav class="navbar navbar-expand-md navbar-light bg-light">
-        <a class="btn btn-primary active" role="button" aria-pressed="true" href="/">Главная</a>
-        <div class="dropdown show">
-            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink objects" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Список объектов
-            </a>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                {% for group in groups %}
-                    <a class="dropdown-item" href="{{ group.name }}">{{ group.description }}</a>
-                {% endfor %}
+        <div class="container-fluid">
+            <div class="row">
+                <div>
+                    <a class="btn btn-primary active" role="button" aria-pressed="true" href="/">Главная</a>
+                </div>
+                <div>
+                    <div class="dropdown show">
+                        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink2 objects" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Роутер
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink2">
+                            {% for group in groups %}
+                                <a class="dropdown-item" href="{{ group.name }}?type=router">{{ group.description }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="dropdown show">
+                        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink objects" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        AP\ST
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            {% for group in groups %}
+                                <a class="dropdown-item" href="{{ group.name }}?type=wifi">{{ group.description }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="dropdown show">
+                        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Действия
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            {% include 'menu/actions.html' %}
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="dropdown show">
-            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Действия
-            </a>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                {% include 'menu/actions.html' %}
-            </div>
+            <form method="POST">
+                    {% if not sc %}
+                        <button class="btn btn-primary" name="btn-service-on" value="True" type="submit">ON Service</button>
+                        <button class="btn btn-danger" name="btn-service-off" value="True" type="submit">OFF Service</button>
+                    {% else %}
+                        <button class="btn btn-danger" name="btn-service-on" value="True"  type="submit">ON Service</button>
+                        <button class="btn btn-primary" name="btn-service-off" value="True"  type="submit">OFF Service</button>
+                    {% endif %}
+            </form>
         </div>
     </nav>
     {% block content %} {% endblock %}

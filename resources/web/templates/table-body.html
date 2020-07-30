@@ -1,0 +1,11 @@
+<td>{{ dev.name }}</td>
+<td>{{ dev.group }}</td>
+<td>{{ dev.ip }}</td>
+{% if dev.status == 'online' %}
+    <td><span class="green-dot"></span></td>
+{% else %}
+    <td><span class="red-dot"></span></td>
+{% endif %}
+{% include 'templates/snmp.html'%}
+<td>{{ dev.last_discovery }}</td>
+<td>{{ dev.last_online }}</td>

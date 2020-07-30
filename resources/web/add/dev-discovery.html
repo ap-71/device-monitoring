@@ -1,0 +1,64 @@
+{% extends 'base-table.html' %}
+{% include 'message.html' %}
+{% block refresh %}
+{# <meta http-equiv="refresh" content="20"> #}
+{% endblock %}
+{% block content %}
+    <div class="container" style="background: rgb(222,222,222); padding-top: 20px;">
+        <form method="POST"  action="/action_{{ url_action }}_{{ url_type }}">
+            <div>
+                <label>Диапазон IP</label>
+                <form class="form-inline">
+                    <div class="row">
+                        <div class="form-group mb-2 col" style="max-width: 45%;">
+                            <label for="ip-range-1" class="sr-only">IP-адрес - начало</label>
+                            <input type="text" class="form-control" name="ip-range-1" id="ip-range-1" placeholder="IP-адрес - начало">
+                        </div>
+                        <div class="form-group mb-2 col" style="max-width: 45%" >
+                            <label for="ip-range-2" class="sr-only">IP-адрес - конец</label>
+                            <input type="text" class="form-control" name="ip-range-2" id="ip-range-2" placeholder="IP-адрес - конец">
+                        </div>
+                        <button type="submit" name="add_dev_discovery_tmp_submit" value="True"
+                                class="btn btn-primary mb-2" style="margin-right: 2%; height: 38px">Начать поиск</button>
+                    </div>
+                </form>
+                <br>
+                <label>Найденные устройства</label>
+                <div style="overflow-y: scroll; max-height: 200px; padding-left: 20px; background: white; border-radius: 5px;">
+                    <div data-spy="scroll" data-target="#navbar-example2"  data-offset="0">
+                        {% for dev in devices %}
+                            <div class="form-check">
+                              <input class="form-check-input" name="add_dev_discovery" type="checkbox" value="{{dev.name}}" id="id_{{dev.name}}">
+                              <label class="form-check-label" for="id_{{dev.name}}">
+                                {{dev.name}}: ip-адрес={{dev.ip}}, group={{dev.group}}
+                              </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <br>
+                <label>Тип</label>
+                <div style="background: white; border-radius: 5px;">
+                    <div class="align-middle" style="padding: 5px 20px">
+                        {% for _type in type_devs['type'].keys() %}
+                        <div class="form-check col-2 form-check-inline">
+                            <input class="form-check-input" type="radio" name="add_dev_discovery_type" value="{{ _type }}"
+                                   id="{{ _type }}"
+                                   {% if loop.index == 1 %}
+                                    checked
+                                   {% endif %}
+                            >
+                            <label class="form-check-label" for="{{ _type }}">
+                            {{ _type }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col col-sm col-md col-lg-6 col-xl-4" style="padding: 10px 0 20px 0;">
+                    <button type="submit" name="add_dev_discovery_submit" value="True" class="btn btn-primary">Добавить</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{%  endblock %}

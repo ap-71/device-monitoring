@@ -1,7 +1,7 @@
 {% extends 'base-table.html' %}
 {% include 'message.html' %}
 {% block content %}
-<div class="container" style="background: rgb(222,222,222); padding-top: 20px;">
+<div class="container" style="background: rgb(222,222,222); padding-top: 20px;" xmlns:0="http://www.w3.org/1999/xhtml">
 	<form method="POST" action="/action_{{ url_action }}_{{ url_type }}">
 		<div >
 			<div class="row justify-content-center" >
@@ -19,13 +19,13 @@
 			<div style="background: white; border-radius: 5px;">
 				<div class="align-middle" style="padding: 5px 20px">
 					<div class="form-check col-2 form-check-inline" >
-						<input class="form-check-input" type="checkbox" name="add_dev_services" value="ping" id="ping">
+						<input class="form-check-input" type="checkbox" name="add_dev_services" value="ping" id="ping" checked>
 						<label class="form-check-label" for="ping">
 						Ping
 						</label>
 					</div>
 					<div class="form-check col-2 form-check-inline">
-						<input class="form-check-input" type="checkbox" name="add_dev_services" value="snmp" id="snmp">
+						<input class="form-check-input" type="checkbox" name="add_dev_services" value="snmp" id="snmp" checked>
 						<label class="form-check-label" for="snmp">
 						SNMP
 						</label>
@@ -34,12 +34,35 @@
 				
 			</div>
 			<br>
+			<label>Тип</label>
+			<div style="background: white; border-radius: 5px;">
+				<div class="align-middle" style="padding: 5px 20px">
+					{% for _type in type_devs['type'].keys() %}
+					<div class="form-check col-2 form-check-inline">
+						<input class="form-check-input" type="radio" name="add_dev_type" value="{{ _type }}"
+							   id="{{ _type }}"
+							   {% if loop.index == 1 %}
+								checked
+							   {% endif %}
+						>
+						<label class="form-check-label" for="{{ _type }}">
+						{{ _type }}
+						</label>
+					</div>
+					{% endfor %}
+				</div>
+
+			</div>
+			<br>
 			<label>Группа</label>
 			<div style="overflow-y: scroll; max-height: 100px; padding-left: 20px; background: white; border-radius: 5px;">
 				<div data-spy="scroll"  data-offset="0">
 					{% for group in groups %}
 					<div class="form-check">
-						<input class="form-check-input" type="radio" name="add_dev_group" value="{{group.name}}" id="id_{{group.name}}">
+						<input class="form-check-input" type="radio" name="add_dev_group" value="{{group.name}}" id="id_{{group.name}}"
+                        {% if loop.index == 1 %}
+                            checked
+                        {% endif %}>
 						<label class="form-check-label" for="id_{{group.name}}">
 						{{group.name}}: {{group.description}}
 						</label>

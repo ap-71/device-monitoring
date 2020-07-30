@@ -1,0 +1,33 @@
+{% if dev.monitoring_snmp == 'enable' %}
+            <td>{{ dev.snmp.get('name', 'None') if dev.snmp.get('name', 'None')|length > 0 else 'None' }}</td>
+            {% if _filter in CONST['WIFI'] %}
+                <td>{{ dev.snmp.get('rx_signal', '') }}</td>
+                <td>{{ dev.snmp.get('tx_signal', '') }}</td>
+                <td>{{ dev.snmp.get('distance', '') }}</td>
+                <td>{{ dev.snmp.get('ccq', '') }}</td>
+                <td>{{ dev.snmp.get('ap', '') }}</td>
+                <td>{{ dev.snmp.get('ap-ip', '') }}</td>
+                {% if dev.snmp.get('lan0', '0') == '1' %}
+                    <td><span class="green-dot"></span></td>
+                {% else %}
+                    <td><span class="red-dot"></span></td>
+                {% endif %}
+                {% if dev.snmp.get('lan1', '0') == '1' %}
+                    <td><span class="green-dot"></span></td>
+                {% else %}
+                    <td><span class="red-dot"></span></td>
+                {% endif %}
+            {% endif %}
+{% else %}
+            <td style="color:#cccccc">SNMP OFF: {{ dev.snmp.get('name', 'None') if dev.snmp.get('name', 'None')|length > 0 else 'None' }}</td>
+            {% if _filter in CONST['WIFI'] %}
+                <td style="color:#cccccc">{{ dev.snmp.get('rx_signal', '') }}</td>
+                <td style="color:#cccccc">{{ dev.snmp.get('tx_signal', '') }}</td>
+                <td style="color:#cccccc">{{ dev.snmp.get('distance', '') }}</td>
+                <td style="color:#cccccc">{{ dev.snmp.get('ccq', '') }}</td>
+                <td style="color:#cccccc">{{ dev.snmp.get('ap', '') }}</td>
+                <td style="color:#cccccc">{{ dev.snmp.get('ap-ip', '') }}</td>
+                <td ><span class="gray-dot"></span></td>
+                <td ><span class="gray-dot"></span></td>
+            {% endif %}
+{% endif %}

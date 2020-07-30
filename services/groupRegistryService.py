@@ -54,7 +54,13 @@ class GroupRegistryService(object):
         except Exception as e:
             return False
 
-    def del_group(self, group):
-        path = os.path.join(self._group_dir, group.get('name') + '.json')
-        if os.path.exists(path):
-            os.remove(path)
+    def del_group(self, groups: list) -> bool:
+        try:
+            for name_group in groups:
+                path = os.path.join(self._group_dir, str(name_group) + '.json')
+                if os.path.exists(path):
+                    os.remove(path)
+            return True
+        except Exception as e:
+            self._log.debug(f"Ошибка удаления группы: {e}")
+        return False

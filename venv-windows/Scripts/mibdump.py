@@ -1,4 +1,4 @@
-#!D:\Python\device-monitoring\venv-windows\Scripts\python.exe
+#!d:\python\device-monitoring\venv-windows\scripts\python.exe
 #
 # This file is part of pysmi software.
 #

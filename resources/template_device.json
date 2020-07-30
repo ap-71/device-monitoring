@@ -1,7 +1,19 @@
 {
-    "name": "template_device",
-    "ip": "192.168.1.1",
-    "notification": "disable",
-    "monitoring": "enable",
-    "index": 1
+  "group": "home",
+  "index": 2,
+  "ip": "192.168.222.5",
+  "last_discovery": 1595762299,
+  "last_online": 1595762299,
+  "monitoring": "enable",
+  "monitoring_snmp": "disable",
+  "name": "PC",
+  "notification": "disable",
+  "snmp": {
+      "name":"",
+      "rx_signal":"",
+      "tx_signal":"",
+      "distance":"",
+      "ccq":""
+  },
+  "status": "online"
 }

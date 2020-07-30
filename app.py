@@ -11,7 +11,9 @@ from mockDataGenerator import generate_mock_data
 from services.discoveryService import DiscoveryService
 from services.notificationService import NotificationService
 from services.deviceRegistryService import DeviceRegistryService
+from services.devDiscoveryRegistryService import DevDiscoveryRegistryService
 from services.groupRegistryService import GroupRegistryService
+from services.snmpRegistryService import SnmpRegistryService
 
 if os.environ.get("LOG_MODE") == "prod":
     # logging in prod mode
@@ -32,10 +34,11 @@ log = logging.getLogger(__name__)
 if os.environ.get("DEMO_MODE", "disable") == "enable":
     generate_mock_data()
 
-
 notificationService = NotificationService.get_instance()
 discoveryService = DiscoveryService.get_instance()
 deviceRegistryService = DeviceRegistryService.get_instance()
+devDiscoveryRegService = DevDiscoveryRegistryService.get_instance()
+snmpRegistryService = SnmpRegistryService.get_instance()
 groupRegistryService = GroupRegistryService.get_instance()
 
 
@@ -52,8 +55,15 @@ def do_discovery():
         try:
             discoveryService.discover_devices()
         except Exception as e:
-            notificationService.notify("ERROR DISCOVERY! " + str(e))
+            notificationService.notify(f"ERROR DISCOVERY! {e}")
         time.sleep(DISCOVERY_PERIOD_SEC)
+
+
+def do_search_dev(devs: list):
+    try:
+        discoveryService.search_device(devs)
+    except Exception as e:
+        notificationService.notify(f"ERROR SEARCH DEVICES! {e}")
 
 
 threading.Thread(target=do_discovery, args=(), daemon=True).start()
@@ -61,94 +71,159 @@ threading.Thread(target=do_discovery, args=(), daemon=True).start()
 app = Flask(__name__, template_folder=WEB_DIR, static_url_path='/static', static_folder=os.path.join(WEB_DIR, "static"))
 
 
-@app.route('/')
+def change_status_btn():
+    try:
+        if request.form['btn-service-on'] == 'True':
+            discoveryService.start_service()
+    except:
+        pass
+
+    try:
+        if request.form['btn-service-off'] == 'True':
+            discoveryService.stop_service()
+    except:
+        pass
+
+
+@app.route('/', methods=('GET', 'POST'))
 def index():
+    discoveryService.start_service()
     data_dto = dict(devices=deviceRegistryService.get_all_devices())
     data_dto.update(dict(groups=groupRegistryService.get_all_groups()))
+    data_dto.update(dict(type_devs=snmpRegistryService.get_all_oid()))
     for dev in data_dto.get("devices"):
         dev["last_discovery"] = pretty_datetime(dev.get("last_discovery"))
         dev["last_online"] = pretty_datetime(dev.get("last_online"))
-    return render_template('index.html', **data_dto)
-    '''with open(os.path.join(WEB_DIR, "index.html")) as f:
-        return make_response(Template(f.read()).render(**data_dto))'''
+    if request.method == 'POST':
+        change_status_btn()
+    status_services = discoveryService.status_service()
+    return render_template('index.html', CONST=DICT_NETWORK_DEV, filter_obj=['router', 'wifi', 'other'], page=None,
+                           sc=status_services.get('ds'),
+                           **data_dto)
 
 
 @app.route('/action_<url_action>_<url_type>', methods=('GET', 'POST'))
 def din_url_action(url_action, url_type):
-    discoverys = False
-    path = os.path.join(url_action, '{str_url_type}.html'.format(str_url_type=url_type))
+    discoveryService.stop_service()
+    path = f'{url_action}/{url_type}.html'
     path_full = os.path.join(WEB_DIR, path)
+    data_dto = dict(
+        devices=deviceRegistryService.get_all_devices()
+    ) if not url_type == 'dev-discovery' else dict(
+        devices=devDiscoveryRegService.get_all_devices()
+    )
+    data_dto.update(dict(groups=groupRegistryService.get_all_groups()))
+    data_dto.update(dict(type_devs=snmpRegistryService.get_all_oid()[0]))
+    str().upper()
     if os.path.isfile(path_full):
-        data_dto = dict(devices=deviceRegistryService.get_all_devices())
-        data_dto.update(dict(groups=groupRegistryService.get_all_groups()))
         if request.method == 'POST':
-            try:
-                if request.form['add_group_submit'] == 'True':
-                    group = {
-                        'name': request.form['add_group_name'],
-                        'description': request.form['add_group_description']
-                    }
-                    groupRegistryService.add_group(group)
-                    for dev_name in request.form.getlist('add_group_devices'):
+            change_status_btn()
+
+            if request.form.get('add_group_submit') == 'True':
+                group = {
+                    'name': request.form['add_group_name'],
+                    'description': request.form['add_group_description']
+                }
+                groupRegistryService.add_group(group)
+                for dev_name in request.form.getlist('add_group_devices'):
+                    for dev in data_dto.get("devices"):
+                        if dev["name"] == dev_name:
+                            dev["group"] = group['name']
+                        deviceRegistryService.update_device(dev)
+
+            if request.form.get('add_dev_in_group_submit') == 'True':
+                for dev_name in request.form.getlist('add_group_devices'):
+                    for dev in data_dto.get("devices"):
+                        if dev["name"] == dev_name:
+                            dev["group"] = request.form['add_dev_in_group']
+                        deviceRegistryService.update_device(dev)
+
+
+            if request.form.get('add_device_submit') == 'True':
+                deviceRegistryService.set_dev_skeleton(
+                    name=request.form['add_dev_name'],
+                    ip=request.form['add_dev_ip'],
+                    type_dev=request.form['add_dev_type'],
+                    monitoring=request.form.getlist('add_dev_services'),
+                    monitoring_snmp=request.form.getlist('add_dev_services'),
+                    group=request.form['add_dev_group']
+
+                )
+                deviceRegistryService.add_device(deviceRegistryService.get_dev_skeleton())
+                # flash('Устройство добавлено' if write else 'Ошибка добавления')
+
+            if request.form.get('del_group_submit') == 'True':
+                groupRegistryService.del_group(request.form.getlist('del_group_names'))
+
+            if request.form.get('del_device_submit') == 'True':
+                deviceRegistryService.del_device(request.form.getlist('del_dev_names'))
+                data_dto.update(dict(devices=deviceRegistryService.get_all_devices()))
+
+            if request.form.get('add_dev_discovery_tmp_submit', 'False') == 'True' \
+                    or request.form.get('add_dev_discovery_submit') == 'True':
+                if request.form.get('add_dev_discovery_tmp_submit', 'False') == 'True':
+                    _devs = []
+
+                    ip_addr_1 = str(request.form['ip-range-1']).split('.')
+                    ip_addr_2 = str(request.form['ip-range-2']).split('.')
+                    i3 = int(ip_addr_1[2])
+                    i4 = int(ip_addr_1[3])
+                    while not i3 > int(ip_addr_2[2]):
+                        while not i4 > int(ip_addr_2[3]):
+                            ip = ip_addr_1
+                            ip[2] = str(i3)
+                            ip[3] = str(i4)
+                            if not int(ip[3]) >= 255:
+                                full_ip = '.'.join(ip)
+                                deviceRegistryService.set_dev_skeleton(
+                                    name=full_ip,
+                                    ip=full_ip,
+                                    type_dev='other'
+                                )
+                                _devs.append(deviceRegistryService.get_dev_skeleton())
+                            i4 += 1
+                        if i4 > int(ip_addr_2[3]):
+                            i4 = 1
+                        i3 += 1
+                    threading.Thread(target=do_search_dev(_devs), args=(), daemon=True).start()
+                    time.sleep(15)
+                    data_dto.update(dict(
+                        devices=devDiscoveryRegService.get_all_devices()
+                    ))
+                elif request.form.get('add_dev_discovery_submit', 'False') == 'True':
+                    print(True)
+                    for dev_name in request.form.getlist('add_dev_discovery'):
                         for dev in data_dto.get("devices"):
                             if dev["name"] == dev_name:
-                                dev["group"] = group['name']
-                            deviceRegistryService.update_device(dev)
-            except:
-                pass
-
-            try:
-                if request.form['add_device_submit'] == 'True':
-                    dev = {
-                        'name': str(request.form['add_dev_name']),
-                        'ip': str(request.form['add_dev_ip']),
-                        'monitoring': (
-                            'enable' if 'ping' in request.form.getlist('add_dev_services') else 'disable'),
-                        'monitoring_snmp': (
-                            'enable' if 'snmp' in request.form.getlist('add_dev_services') else 'disable'),
-                        'group': str(request.form['add_dev_group']), 'notification': 'enable',
-                        'index': int(datetime.datetime.now().timestamp())}
-                    write = deviceRegistryService.add_device(dev)
-                    flash('Устройство добавлено' if write else 'Ошибка добавления')
-
-            except:
-                pass
-
-            try:
-                if request.form['del_group_submit'] == 'True':
-                    for name in request.form.getlist('del_group_names'):
-                        group = {'name': str(name)}
-                        groupRegistryService.del_group(group)
-
-            except:
-                pass
-
-            try:
-                if request.form['del_device_submit'] == 'True':
-                    for name in request.form.getlist('del_dev_names'):
-                        dev = {'name': str(name)}
-                        deviceRegistryService.del_device(dev)
-
-            except:
-                pass
+                                dev["type"] = request.form['add_dev_discovery_type']
+                                deviceRegistryService.add_device(dev)
+                    devDiscoveryRegService.del_device(request.form.getlist('add_dev_discovery'))
+                    data_dto.update(dict(
+                        devices=devDiscoveryRegService.get_all_devices()
+                    ))
 
             '''for dev in data_dto.get("devices"):
             dev["last_discovery"] = pretty_datetime(dev.get("last_discovery"))
             dev["last_online"] = pretty_datetime(dev.get("last_online"))'''
-        return render_template(path, url_action=url_action, url_type=url_type, **data_dto)
+        status_services = discoveryService.status_service()
+        return render_template(path, sc=status_services.get('ds'), url_action=url_action, url_type=url_type, **data_dto)
     else:
-        return render_template('404.html')
+        status_services = discoveryService.status_service()
+        return render_template('404.html', sc=status_services.get('ds'), **data_dto)
 
 
-@app.route('/<url>')
+@app.route('/<url>', methods=('GET', 'POST'))
 def din_url(url):
-    discoverys = True
     data_dto = dict(devices=deviceRegistryService.get_all_devices())
     data_dto.update(dict(groups=groupRegistryService.get_all_groups()))
     for dev in data_dto.get("devices"):
         dev["last_discovery"] = pretty_datetime(dev.get("last_discovery"))
         dev["last_online"] = pretty_datetime(dev.get("last_online"))
-    return render_template('obj.html', page=url, **data_dto)
+    if request.method == 'POST':
+        change_status_btn()
+    status_services = discoveryService.status_service()
+    return render_template('index.html', CONST=DICT_NETWORK_DEV, filter_obj=[request.args.get('type')],
+                           sc=status_services.get('ds'), page=url, **data_dto)
 
 
 @app.route('/static/<path:path>')
