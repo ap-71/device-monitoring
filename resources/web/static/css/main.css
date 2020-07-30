@@ -30,12 +30,12 @@
 
 @font-face {
   font-family: Lato-Regular;
-  src: url('/static/fonts/Lato/Lato-Regular.ttf');
+  src: url('/resources/web/static/fonts/Lato/Lato-Regular.ttf');
 }
 
 @font-face {
   font-family: Lato-Bold;
-  src: url('/static/fonts/Lato/Lato-Bold.ttf');
+  src: url('/resources/web/static/fonts/Lato/Lato-Bold.ttf');
 }
 
 /*//////////////////////////////////////////////////////////////////
