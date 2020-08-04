@@ -2,6 +2,7 @@ import time
 import logging
 import datetime
 import threading
+import ipaddress
 from constants import *
 from flask import Flask, request, flash
 from jinja2 import Template
@@ -163,12 +164,21 @@ def din_url_action(url_action, url_type):
                     or request.form.get('add_dev_discovery_submit') == 'True':
                 if request.form.get('add_dev_discovery_tmp_submit', 'False') == 'True':
                     _devs = []
-
-                    ip_addr_1 = str(request.form['ip-range-1']).split('.')
+                    ip_addr_1 = int(ipaddress.ip_address(str(request.form['ip-range-1'])))
+                    ip_addr_2 = int(ipaddress.ip_address(str(request.form['ip-range-2'])))
+                    '''ip_addr_1 = str(request.form['ip-range-1']).split('.')
                     ip_addr_2 = str(request.form['ip-range-2']).split('.')
                     i3 = int(ip_addr_1[2])
-                    i4 = int(ip_addr_1[3])
-                    while not i3 > int(ip_addr_2[2]):
+                    i4 = int(ip_addr_1[3])'''
+                    for ip in range(ip_addr_1, ip_addr_2):
+                      print(ipaddress.ip_address(ip))
+                      deviceRegistryService.set_dev_skeleton(
+                                    name=ipaddress.ip_address(ip),
+                                    ip=ipaddress.ip_address(ip),
+                                    type_dev='other'
+                                )
+                      _devs.append(deviceRegistryService.get_dev_skeleton())
+                    '''while not i3 > int(ip_addr_2[2]):
                         while not i4 > int(ip_addr_2[3]):
                             ip = ip_addr_1
                             ip[2] = str(i3)
@@ -184,7 +194,7 @@ def din_url_action(url_action, url_type):
                             i4 += 1
                         if i4 > int(ip_addr_2[3]):
                             i4 = 1
-                        i3 += 1
+                        i3 += 1'''
                     threading.Thread(target=do_search_dev(_devs), args=(), daemon=True).start()
                     time.sleep(15)
                     data_dto.update(dict(
