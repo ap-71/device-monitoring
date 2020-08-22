@@ -175,7 +175,6 @@ def din_url_action(url_action, url_type):
                             ip=ipaddress.ip_address(ip),
                             type_dev='other'
                         )
-                        # print(deviceRegistryService.get_dev_skeleton())
                         _devs.append(deviceRegistryService.get_dev_skeleton())
                     t = threading.Thread(target=do_search_dev(_devs), args=(), daemon=True)
                     t.start()
