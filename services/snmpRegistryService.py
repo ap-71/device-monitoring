@@ -30,8 +30,6 @@ class SnmpRegistryService(object):
     def __init__(self):
         self._log = logging.getLogger(__name__)
         self._snmp_conf = f"{RESOURCES_DIR}/snmp_conf.json"
-        # self._statusService = StatusService.get_instance()
-        # self._make_folders()
 
     def get_all_oid(self):
         devtype_oid = []

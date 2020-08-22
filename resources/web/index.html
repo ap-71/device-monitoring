@@ -5,87 +5,95 @@
 {% block content %}
     {% for _filter in filter_obj %}
         {# Условие для изменение колонок в столбце SNMP #}
-        {% if _filter in CONST['NETWORK'] or _filter in CONST['OTHER'] %}
+        {# {% if _filter in CONST['NETWORK'] or _filter in CONST['OTHER'] or _filter in CONST['CAMS'] %}
             {% set count_col = 1 %}
         {% elif _filter in CONST['WIFI'] %}
             {% set count_col = 9 %}
-        {% endif %}
-        <h1 style="padding-left: 5%">
-        {# Формирование надписи над таблицей #}
-            {% for i in _filter%}
-                {% if loop.index == 1 %}
-                    <b style="text-transform: uppercase;">{{ i }}</b>
-                {% else %}
-                    {{ i }}
-                {% endif %}
-            {% endfor %}
-        </h1>
-        <div class="table-responsive">
-            <table class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th scope="col" rowspan="2">Device name</th>
-                        <th scope="col" rowspan="2">Group</th>
-                        <th scope="col" rowspan="2">IP</th>
-                        <th scope="col" rowspan="2">Status</th>
-                        <th scope="col" colspan="{{ count_col }}">SNMP</th>
-                        <th scope="col" rowspan="2">Last Discovery</th>
-                        <th scope="col" rowspan="2">Last Online</th>
-                    </tr>
-                    <tr>
-                        <th>Name</th>
-                        {% if count_col > 1 %}
-                            <th>RX Signal</th>
-                            <th>TX Signal</th>
-                            <th>Distance</th>
-                            <th>CCQ</th>
-                            <th>AP</th>
-                            <th>AP-IP</th>
-                            <th>LAN0</th>
-                            <th>LAN1</th>
-                        {% endif %}
-                    </tr>
-                </thead>
-                <tbody>
-                {# Перебор устройств из массива устройств #}
-                    {% for dev in devices %}
-                        <tr>
-                        {% if _filter in CONST['NETWORK']  %}
-                            {% if dev.type in CONST['NETWORK'] %}
-                                {% if dev.monitoring == 'disable' and dev.group == page %}
-                                    {% include 'templates/table-body-disable.html'%}
-                                {% elif dev.group == page %}
-                                    {% include 'templates/table-body.html'%}
-                                {% elif page == None  %}
-                                    {% include 'templates/table-body.html'%}
-                                {% endif %}
-                            {% endif %}
-                        {% elif _filter in CONST['WIFI'] %}
-                            {% if dev.type in CONST['WIFI'] %}
-                                {% if dev.monitoring == 'disable' and dev.group == page %}
-                                    {% include 'templates/table-body-disable.html'%}
-                                {% elif dev.group == page  and _filter == 'wifi' %}
-                                    {% include 'templates/table-body.html'%}
-                                {% elif page == None  %}
-                                    {% include 'templates/table-body.html'%}
-                                {% endif %}
-                            {% endif %}
+        {% endif %} #}
 
-                        {% elif _filter in CONST['OTHER'] %}
-                            {% if dev.type in CONST['OTHER'] %}
-                                {% if dev.monitoring == 'disable' and dev.group == page %}
-                                    {% include 'templates/table-body-disable.html'%}
-                                {% elif dev.group == page  and _filter == 'wifi' %}
-                                    {% include 'templates/table-body.html'%}
-                                {% elif page == None  %}
-                                    {% include 'templates/table-body.html'%}
+            {# {% set count_col = CONST[category_dev]['router'].get('cols', 1) %} #}
+
+            <h1 style="padding-left: 5%">
+            {# Формирование надписи над таблицей #}
+                {% for i in _filter%}
+                    {% if loop.index == 1 %}
+                        <b style="text-transform: uppercase;">{{ i }}</b>
+                    {% else %}
+                        {{ i }}
+                    {% endif %}
+                {% endfor %}
+            </h1>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    {# Формирование названий столбцов #}
+                    {% for category_dev in CONST.values() %}
+                        {% if _filter in category_dev %}
+                            <thead>
+                                <tr>
+                                    <th scope="col" rowspan="2">Device name</th>
+                                    <th scope="col" rowspan="2">Group</th>
+                                    <th scope="col" rowspan="2">IP</th>
+                                    <th scope="col" rowspan="2">Status</th>
+                                    <th scope="col" colspan="{{ category_dev[_filter].get('cols', 1) }}">SNMP</th>
+                                    <th scope="col" rowspan="2">Last Discovery</th>
+                                    <th scope="col" rowspan="2">Last Online</th>
+                                </tr>
+                                <tr>
+                                    <th>Name</th>
+                                    {% if category_dev[_filter].get('cols', 1) > 1 %}
+                                        <th>RX Signal</th>
+                                        <th>TX Signal</th>
+                                        <th>Distance</th>
+                                        <th>CCQ</th>
+                                        <th>AP</th>
+                                        <th>AP-IP</th>
+                                        <th>LAN0</th>
+                                        <th>LAN1</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                        {% endif %}
+                    {% endfor %}
+                    <tbody>
+                    {# Перебор устройств из массива устройств #}
+                        {% for dev in devices %}
+                            <tr>
+                            {% if _filter in CONST['NETWORK']  %}
+                                {% if dev.type == _filter %}
+                                    {% if dev.monitoring == 'disable' and dev.group == page %}
+                                        {% include 'templates/table-body-disable.html'%}
+                                    {% elif dev.group == page %}
+                                        {% include 'templates/table-body.html'%}
+                                    {% elif page == None  %}
+                                        {% include 'templates/table-body.html'%}
+                                    {% endif %}
+                                {% endif %}
+                            {% elif _filter in CONST['WIFI'] %}
+                                {% if dev.type == _filter %}
+                                    {% if dev.monitoring == 'disable' and dev.group == page %}
+                                        {% include 'templates/table-body-disable.html'%}
+                                    {% elif dev.group == page  and _filter in CONST['WIFI'] %}
+                                        {% include 'templates/table-body.html'%}
+                                    {% elif page == None  %}
+                                        {% include 'templates/table-body.html'%}
+                                    {% endif %}
+                                {% endif %}
+
+                            {% elif _filter in CONST['OTHER'] %}
+                                {% if dev.type == _filter %}
+                                    {% if dev.monitoring == 'disable' and dev.group == page %}
+                                        {% include 'templates/table-body-disable.html'%}
+                                    {% elif dev.group == page  and _filter in CONST['WIFI'] %}
+                                        {% include 'templates/table-body.html'%}
+                                    {% elif page == None  %}
+                                        {% include 'templates/table-body.html'%}
+                                    {% endif %}
                                 {% endif %}
                             {% endif %}
-                        {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
     {% endfor %}
 {% endblock %}

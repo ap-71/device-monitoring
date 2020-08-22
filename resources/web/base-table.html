@@ -22,30 +22,21 @@
                 <div>
                     <a class="btn btn-primary active" role="button" aria-pressed="true" href="/">Главная</a>
                 </div>
-                <div>
-                    <div class="dropdown show">
-                        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink2 objects" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Роутер
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink2">
-                            {% for group in groups %}
-                                <a class="dropdown-item" href="{{ group.name }}?type=router">{{ group.description }}</a>
-                            {% endfor %}
+                {% for category in CONST %}
+                    <div>
+                        <div class="dropdown show">
+                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink2 objects" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{ category }}
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink2">
+                                {% for group in groups %}
+                                    <a class="dropdown-item"
+                                       href="{{ group.name }}?{% for type_dev in CONST[category] %}type={{ type_dev }}&{% endfor %}">{{ group.description }}</a>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div>
-                    <div class="dropdown show">
-                        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink objects" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        AP\ST
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                            {% for group in groups %}
-                                <a class="dropdown-item" href="{{ group.name }}?type=wifi">{{ group.description }}</a>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
+                {% endfor %}
                 <div>
                     <div class="dropdown show">
                         <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink actions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

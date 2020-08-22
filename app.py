@@ -2,6 +2,7 @@ import time
 import logging
 import datetime
 import threading
+import ipaddress
 from constants import *
 from flask import Flask, request, flash
 from jinja2 import Template
@@ -97,7 +98,11 @@ def index():
     if request.method == 'POST':
         change_status_btn()
     status_services = discoveryService.status_service()
-    return render_template('index.html', CONST=DICT_NETWORK_DEV, filter_obj=['router', 'wifi', 'other'], page=None,
+    type_dev_result = []
+    for type_main in DICT_NETWORK_DEV.values():
+        for type_dev in type_main:
+            type_dev_result.append(type_dev)
+    return render_template('index.html', CONST=DICT_NETWORK_DEV, filter_obj=type_dev_result, page=None,
                            sc=status_services.get('ds'),
                            **data_dto)
 
@@ -138,7 +143,6 @@ def din_url_action(url_action, url_type):
                             dev["group"] = request.form['add_dev_in_group']
                         deviceRegistryService.update_device(dev)
 
-
             if request.form.get('add_device_submit') == 'True':
                 deviceRegistryService.set_dev_skeleton(
                     name=request.form['add_dev_name'],
@@ -163,48 +167,34 @@ def din_url_action(url_action, url_type):
                     or request.form.get('add_dev_discovery_submit') == 'True':
                 if request.form.get('add_dev_discovery_tmp_submit', 'False') == 'True':
                     _devs = []
-
-                    ip_addr_1 = str(request.form['ip-range-1']).split('.')
-                    ip_addr_2 = str(request.form['ip-range-2']).split('.')
-                    i3 = int(ip_addr_1[2])
-                    i4 = int(ip_addr_1[3])
-                    while not i3 > int(ip_addr_2[2]):
-                        while not i4 > int(ip_addr_2[3]):
-                            ip = ip_addr_1
-                            ip[2] = str(i3)
-                            ip[3] = str(i4)
-                            if not int(ip[3]) >= 255:
-                                full_ip = '.'.join(ip)
-                                deviceRegistryService.set_dev_skeleton(
-                                    name=full_ip,
-                                    ip=full_ip,
-                                    type_dev='other'
-                                )
-                                _devs.append(deviceRegistryService.get_dev_skeleton())
-                            i4 += 1
-                        if i4 > int(ip_addr_2[3]):
-                            i4 = 1
-                        i3 += 1
-                    threading.Thread(target=do_search_dev(_devs), args=(), daemon=True).start()
-                    time.sleep(15)
+                    ip_addr_1 = int(ipaddress.ip_address(str(request.form['ip-range-1'])))
+                    ip_addr_2 = int(ipaddress.ip_address(str(request.form['ip-range-2'])))
+                    for ip in range(ip_addr_1, ip_addr_2+1):
+                        deviceRegistryService.set_dev_skeleton(
+                            name=ipaddress.ip_address(ip),
+                            ip=ipaddress.ip_address(ip),
+                            type_dev='other'
+                        )
+                        # print(deviceRegistryService.get_dev_skeleton())
+                        _devs.append(deviceRegistryService.get_dev_skeleton())
+                    t = threading.Thread(target=do_search_dev(_devs), args=(), daemon=True)
+                    t.start()
+                    t.join()
                     data_dto.update(dict(
                         devices=devDiscoveryRegService.get_all_devices()
                     ))
                 elif request.form.get('add_dev_discovery_submit', 'False') == 'True':
-                    print(True)
                     for dev_name in request.form.getlist('add_dev_discovery'):
                         for dev in data_dto.get("devices"):
                             if dev["name"] == dev_name:
                                 dev["type"] = request.form['add_dev_discovery_type']
+                                dev["group"] = request.form['add_dev_discovery_group']
                                 deviceRegistryService.add_device(dev)
                     devDiscoveryRegService.del_device(request.form.getlist('add_dev_discovery'))
                     data_dto.update(dict(
                         devices=devDiscoveryRegService.get_all_devices()
                     ))
 
-            '''for dev in data_dto.get("devices"):
-            dev["last_discovery"] = pretty_datetime(dev.get("last_discovery"))
-            dev["last_online"] = pretty_datetime(dev.get("last_online"))'''
         status_services = discoveryService.status_service()
         return render_template(path, sc=status_services.get('ds'), url_action=url_action, url_type=url_type, **data_dto)
     else:
@@ -222,7 +212,7 @@ def din_url(url):
     if request.method == 'POST':
         change_status_btn()
     status_services = discoveryService.status_service()
-    return render_template('index.html', CONST=DICT_NETWORK_DEV, filter_obj=[request.args.get('type')],
+    return render_template('index.html', CONST=DICT_NETWORK_DEV, filter_obj=request.args.getlist('type'),
                            sc=status_services.get('ds'), page=url, **data_dto)
 
 

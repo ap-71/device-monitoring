@@ -31,10 +31,10 @@ class DiscoveryService(object):
         self._discoveryWorkerPool = int(os.environ.get("DISCOVERY_WORKER_POOL", 10))
 
     def discover_devices(self):
-        self.worker(self._discoveryWorkerPool, self._deviceRegistryService.get_all_devices())
+        self.worker(pool=self._discoveryWorkerPool, devices=self._deviceRegistryService.get_all_devices())
 
     def search_device(self, devices: list):
-        self.worker(20500, devices, True)
+        self.worker(pool=20500, devices=devices, search=True)
 
     def worker(self, pool: int,  devices: list, search: bool = False):
         if self._statusService.get_discovery_service() or search:
